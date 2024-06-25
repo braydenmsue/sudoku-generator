@@ -34,10 +34,10 @@ class Column(Group):
 
 
 class Block(Group):
-    def __init__(self, cells, rows: list, cols: list):
+    def __init__(self, cells):
         super().__init__(cells)
-        self.rows = rows
-        self.cols = cols
+        # self.rows = rows
+        # self.cols = cols
 
 
 class Board:
@@ -45,6 +45,7 @@ class Board:
         self.game = self.initialise()
         self.rows = self.extract_rows(self.game)
         self.cols = self.extract_cols(self.game)
+        self.blocks = self.extract_blocks(self.game)
 
     # Returns a 9x9 2D array of 0-valued Cell objects with row/col categorical labels
     def initialise(self):
@@ -79,31 +80,61 @@ class Board:
         return cols
 
     def extract_blocks(self, game_board):
-        pass
+        blocks = []
+        for block_row in range(0, 9, 3):
+            for block_col in range(0, 9, 3):
+                block_cells = []
+                for i in range(3):
+                    for j in range(3):
+                        block_cells.append(game_board[block_row + i][block_col + j])
+                blocks.append(Block(block_cells))
+        return blocks
 
-    # def pick_val(self, col_idx, values):
+    def val_in_row(self, row_idx, value):
+        for cell in self.rows[row_idx].cells:
+            if cell.value == value:
+                return True
+        return False
+
+    def val_in_col(self, col_idx, value):
+        for cell in self.cols[col_idx].cells:
+            if cell.value == value:
+                return True
+        return False
+
+    # def pick_val(self, row_idx, col_idx, values):
     #     for val in values:
-    #         for
+    #         if not self.val_in_col(col_idx, val) and not self.val_in_row(row_idx, val):
+    #             values.remove(val)
+    #             return val
+    #     return 0
 
-
+    def pick_val(self, col_idx, values):
+        for val in values:
+            if not self.val_in_col(col_idx, val):
+                values.remove(val)
+                return val
+        return 0
 
     # randomly shuffle list of values, pop value if valid
     # TODO: validity checks
     def populate(self):
-        for row in self.game:
-            numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+        for row in range(len(self.game)):
+            numbers = [1,2,3,4,5,6,7,8,9]
             random.shuffle(numbers)
-
-            i = 0
-            for cell in row:
-                cell.value = numbers[i]
-                i += 1
-
-
+            for col in range(len(self.game[row])):
+                cell = self.game[row][col]
+                if cell.value == 0:
+                    # cell.value = self.pick_val(row, col, numbers)
+                    cell.value = self.pick_val(col, numbers)
 
 def main():
 
     b = Board()
+
+    b.populate()
+    b.update()
 
     b.populate()
     b.update()
